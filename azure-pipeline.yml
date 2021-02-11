@@ -1,0 +1,116 @@
+trigger:
+  branches:
+    include:
+    - main
+pool:
+  vmImage: 'ubuntu-latest'
+stages:
+- stage: Dev
+  variables:
+  - name: SERVICE
+    value: $(DEV_SERVICE)
+  - name: SERVICE_KEY
+    value: $(DEV_SERVICE_KEY)
+  - name: INCLUDE
+    value: $(DEV_INCLUDE)
+  - name: EXCLUDE
+    value: $(DEV_EXCLUDE)
+  - name: INDEX_FILE_PATH
+    value: $(DEV_INDEX_FILE_PATH)
+  jobs:
+  - job: deployment
+    displayName: Deployment
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.x'
+        addToPath: true
+        architecture: 'x64'
+    - task: PythonScript@0
+      inputs:
+        scriptSource: 'filePath'
+        scriptPath: '$(System.DefaultWorkingDirectory)/update-index.py'
+        arguments: '--service $(SERVICE) --service_key $(SERVICE_KEY) --include $(INCLUDE) --exclude $(EXCLUDE) --index_file_path $(INDEX_FILE_PATH)'
+- stage: Test
+  variables:
+  - name: SERVICE
+    value: $(TEST_SERVICE)
+  - name: SERVICE_KEY
+    value: $(TEST_SERVICE_KEY)
+  - name: INCLUDE
+    value: $(TEST_INCLUDE)
+  - name: EXCLUDE
+    value: $(TEST_EXCLUDE)
+  - name: INDEX_FILE_PATH
+    value: $(TEST_INDEX_FILE_PATH)
+  jobs:
+  - job: approvalTest
+    displayName: Approval
+    pool:
+      name: server
+    timeoutInMinutes: 4320
+    steps:
+    - task: ManualValidation@0
+      timeoutInMinutes: 1440
+      inputs:
+        instructions: 'Please confirm TEST deployment'
+        notifyUsers: |
+          YOUR_NAME@DOMAIN.COM
+        onTimeout: 'reject'
+  - job: deployTest
+    displayName: Deployment
+    dependsOn:
+    - approvalTest
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.x'
+        addToPath: true
+        architecture: 'x64'
+    - task: PythonScript@0
+      inputs:
+        scriptSource: 'filePath'
+        scriptPath: '$(System.DefaultWorkingDirectory)/update-index.py'
+        arguments: '--service $(SERVICE) --service_key $(SERVICE_KEY) --include $(INCLUDE) --exclude $(EXCLUDE) --index_file_path $(INDEX_FILE_PATH)'
+- stage: Prod
+  variables:
+  - name: SERVICE
+    value: $(PROD_SERVICE)
+  - name: SERVICE_KEY
+    value: $(PROD_SERVICE_KEY)
+  - name: INCLUDE
+    value: $(PROD_INCLUDE)
+  - name: EXCLUDE
+    value: $(PROD_EXCLUDE)
+  - name: INDEX_FILE_PATH
+    value: $(PROD_INDEX_FILE_PATH)
+  jobs:
+  - job: approvalProd
+    displayName: Approval
+    pool:
+      name: server
+    timeoutInMinutes: 4320
+    steps:
+    - task: ManualValidation@0
+      timeoutInMinutes: 1440
+      inputs:
+        instructions: 'Please confirm PROD deployment'
+        notifyUsers: |
+          YOUR_NAME@DOMAIN.COM
+        onTimeout: 'reject'
+  - job: deployProd
+    displayName: Deployment
+    dependsOn:
+    - approvalProd
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.x'
+        addToPath: true
+        architecture: 'x64'
+    - task: PythonScript@0
+      inputs:
+        scriptSource: 'filePath'
+        scriptPath: '$(System.DefaultWorkingDirectory)/update-index.py'
+        arguments: '--service $(SERVICE) --service_key $(SERVICE_KEY) --include $(INCLUDE) --exclude $(EXCLUDE) --index_file_path $(INDEX_FILE_PATH)'
+
