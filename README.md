@@ -12,6 +12,8 @@ The scripts creates specified indexes or updates (with additional fields) existi
 |------------------------------------------------|---------------------------------------------------------|------------------------------------------|
 | --ENV_SERVICE          			| Azure Cognitive Search Service              								 | Required					    |
 | --ENV_SERVICE_KEY      			| Azure Cognitive Search Service Key 								 | Required                        |
-| --ENV_INCLUDE            			| Indexes to create / modify (COMMA SEPARATED e.g. index1,index2,index3)				 | OPTIONAL - If not specified it applies to all indexed not present in the ENV_ESCLUDE variable|
-| --ENV_ESCLUDE          			| Indexes to exclude from update (COMMA SEPARATED e.g. index1,index2,index3) |  |
+| --ENV_INCLUDE            			| Indexes to create / modify (COMMA SEPARATED e.g. index1,index2,index3)				 | OPTIONAL - If not specified it applies to all indexed not present in the ENV_EXCLUDE variable|
+| --ENV_EXCLUDE          			| Indexes to exclude from update (COMMA SEPARATED e.g. index1,index2,index3) |  |
 | --ENV_INDEX_FILE_PATH      			| File path fot the index json definition  								 | Required |
+
+Please substitute ENV with required environment when setting up the variables in the Azure DevOps YAML Pipeline editor (ENV -> DEV / ENV -> TEST / ENV -> PROD)
